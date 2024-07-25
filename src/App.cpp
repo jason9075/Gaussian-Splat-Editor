@@ -5,7 +5,8 @@
 App::App(const float screenWidth, const float screenHeight) {
   glViewport(0, 0, screenWidth, screenHeight);
 
-  shaderProgram = std::make_unique<Shader>("./shaders/gaussian_vert.glsl", "./shaders/gaussian_frag.glsl");
+  shaderProgram =
+      std::make_unique<Shader>("./shaders/geo_vert.glsl", "./shaders/geo_gert.glsl", "./shaders/geo_frag.glsl");
 
   happly::PLYData plyIn("./assets/Medic.ply");
 
@@ -33,6 +34,7 @@ App::App(const float screenWidth, const float screenHeight) {
 
   std::vector<GaussianSphere> spheres;
   for (int i = 0; i < x.size(); i++) {
+    // for (int i = 0; i < 1000; i++) {
     GaussianSphere sphere;
     sphere.position = glm::vec3(x[i], y[i], z[i]);
     sphere.color = glm::vec3(0.5f + C0 * red[i], 0.5f + C0 * grn[i], 0.5f + C0 * blu[i]);  // normalize color
@@ -42,7 +44,7 @@ App::App(const float screenWidth, const float screenHeight) {
     glm::mat3 M = R * S * glm::transpose(S) * glm::transpose(R);
     sphere.covA = glm::vec3(M[0][0], M[0][1], M[0][2]);
     sphere.covB = glm::vec3(M[1][1], M[1][2], M[2][2]);
-    sphere.opacity = opacity[i];
+    sphere.opacity = 1. / (1. + std::exp(-opacity[i]));
     spheres.push_back(sphere);
   }
   splat = std::make_unique<GaussianSplat>(spheres);
@@ -57,6 +59,7 @@ App::App(const float screenWidth, const float screenHeight) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   // TODO: fix z value is opposite
+  // if camera is looking at the origin, the z value should be negative
   splat->sort(camera->viewMatrix, false);
 }
 App::~App() {}
@@ -86,6 +89,7 @@ void App::OnRender() {
   glUniform1f(glGetUniformLocation(shaderProgram->ID, "tan_fovx"), tan_fovx);
   glUniform1f(glGetUniformLocation(shaderProgram->ID, "tan_fovy"), tan_fovy);
   camera->update(shaderProgram.get());
+  // splat->sort(camera->viewMatrix, false);
   splat->draw(shaderProgram.get());
 }
 
@@ -94,6 +98,14 @@ void App::OnImGuiRender() {
   ImGui::Text("X:%.2f Y:%.2f Z:%.2f", camera->position.x, camera->position.y, camera->position.z);
   ImGui::Text("Camera Orientation:");
   ImGui::Text("X:%.2f Y:%.2f Z:%.2f", camera->orientation.x, camera->orientation.y, camera->orientation.z);
+  ImGui::Text("View Matrix:");
+
+  glm::mat4 vm = camera->viewMatrix;
+  ImGui::Text("%.2f %.2f %.2f %.2f", vm[0][0], vm[0][1], vm[0][2], vm[0][3]);
+  ImGui::Text("%.2f %.2f %.2f %.2f", vm[1][0], vm[1][1], vm[1][2], vm[1][3]);
+  ImGui::Text("%.2f %.2f %.2f %.2f", vm[2][0], vm[2][1], vm[2][2], vm[2][3]);
+  ImGui::Text("%.2f %.2f %.2f %.2f", vm[3][0], vm[3][1], vm[3][2], vm[3][3]);
+
   ImGui::SliderFloat("Rot-X", &rotateX, -180., 180.);
   ImGui::SliderFloat("Rot-Z", &rotateZ, -180., 180.);
   ImGui::SliderFloat("ScaleF", &scaleFactor, 0.1f, 3.0f);

@@ -13,15 +13,6 @@ void VAO::linkAttr(VBO &VBO, GLuint layout, GLuint numComponents, GLenum type, G
   VBO.unbind();
 }
 
-void VAO::linkAttrDiv(VBO &VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride,
-                      const void *offset) {
-  VBO.bind();
-  glEnableVertexAttribArray(layout);
-  glVertexAttribPointer(layout, numComponents, type, GL_FALSE, stride, offset);
-  glVertexAttribDivisor(layout, 1);
-  VBO.unbind();
-}
-
 void VAO::bind() { glBindVertexArray(ID); }
 
 void VAO::unbind() { glBindVertexArray(0); }
@@ -141,36 +132,50 @@ void Mesh::del() {
   ebo.del();
 }
 
-GaussianSplat::GaussianSplat(const std::vector<GaussianSphere> &spheres) : vao(), vbo(spheres), spheres(spheres) {
+GaussianSplat::GaussianSplat(const std::vector<GaussianSphere> &spheres)
+    : vao(), vbo(spheres), ebo(), spheres(spheres) {
+  std::vector<GLuint> indices(spheres.size());
   vao.bind();
+  ebo.bind();
+  ebo.bufferData(indices);
 
-  vao.linkAttrDiv(vbo, 0, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, position));
-  vao.linkAttrDiv(vbo, 1, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, color));
-  vao.linkAttrDiv(vbo, 2, 1, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, opacity));
-  vao.linkAttrDiv(vbo, 3, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, covA));
-  vao.linkAttrDiv(vbo, 4, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, covB));
+  vao.linkAttr(vbo, 0, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, position));
+  vao.linkAttr(vbo, 1, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, color));
+  vao.linkAttr(vbo, 2, 1, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, opacity));
+  vao.linkAttr(vbo, 3, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, covA));
+  vao.linkAttr(vbo, 4, 3, GL_FLOAT, sizeof(GaussianSphere), (void *)offsetof(GaussianSphere, covB));
 
   vao.unbind();
 }
 
 void GaussianSplat::sort(const glm::mat4 &viewMatrix, const bool isAscending) {
-  std::sort(spheres.begin(), spheres.end(), [&](const GaussianSphere &a, const GaussianSphere &b) {
-    float zA = a.position.x * viewMatrix[0][2] + a.position.y * viewMatrix[1][2] + a.position.z * viewMatrix[2][2] +
-               viewMatrix[3][2];
-    float zB = b.position.x * viewMatrix[0][2] + b.position.y * viewMatrix[1][2] + b.position.z * viewMatrix[2][2] +
-               viewMatrix[3][2];
-    return isAscending ? zA < zB : zA > zB;
-  });
+  std::vector<std::pair<size_t, float>> zValues(spheres.size());
 
-  // Update the VBO
-  vbo.bind();
-  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GaussianSphere) * spheres.size(), spheres.data());
-  vbo.unbind();
+  for (size_t i = 0; i < spheres.size(); ++i) {
+    float z = spheres[i].position.x * viewMatrix[0][2] + spheres[i].position.y * viewMatrix[1][2] +
+              spheres[i].position.z * viewMatrix[2][2] + viewMatrix[3][2];
+    zValues[i] = std::make_pair(i, z);
+  }
+  std::sort(zValues.begin(), zValues.end(),
+            [isAscending](const std::pair<size_t, float> &a, const std::pair<size_t, float> &b) {
+              return isAscending ? a.second < b.second : a.second > b.second;
+            });
+
+  // Update the EBO
+  std::vector<GLuint> indices(spheres.size());
+  for (size_t i = 0; i < spheres.size(); ++i) {
+    indices[i] = zValues[i].first;
+  }
+
+  vao.bind();
+  ebo.bind();
+  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * indices.size(), indices.data());
+  vao.unbind();
 }
 
 void GaussianSplat::draw(Shader *shader) {
   vao.bind();
-  glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, spheres.size());
+  glDrawElements(GL_POINTS, spheres.size(), GL_UNSIGNED_INT, 0);
   vao.unbind();
 }
 

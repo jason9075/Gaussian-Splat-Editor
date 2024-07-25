@@ -97,6 +97,7 @@ class GaussianSplat {
  public:
   VAO vao;
   VBO vbo;
+  EBO ebo;
   std::vector<GaussianSphere> spheres;
 
   GaussianSplat(const std::vector<GaussianSphere> &spheres);
