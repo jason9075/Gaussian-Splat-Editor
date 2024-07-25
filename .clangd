@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - ./include/
+    - -isystem
+    - ./external/imgui
