@@ -138,8 +138,8 @@ void App::OnImGuiRender() {
   ImGui::SliderFloat("ScaleF", &scaleFactor, 0.1f, 3.0f);
 
   ImGui::Text("Box:");
-  ImGui::SliderFloat3("Scale", boxSize, 0.1f, 10.0f);
-  ImGui::SliderFloat3("Position", boxPosition, -30.0f, 30.0f);
+  ImGui::SliderFloat3("Scale", boxSize, 0.1f, 20.0f);
+  ImGui::SliderFloat3("Position", boxPosition, -50.0f, 50.0f);
 }
 
 glm::mat4 App::getViewModelMatrix() { return camera->viewMatrix; }

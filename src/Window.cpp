@@ -23,8 +23,8 @@ bool initWindow(SDL_Window **window, SDL_GLContext *context, const char *title, 
     width = current.w;
     height = current.h;
     // hard code the window size
-    width = 1024;
-    height = 768;
+    // width = 1024;
+    // height = 768;
   }
 
   *window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
