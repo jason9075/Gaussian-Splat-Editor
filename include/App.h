@@ -15,6 +15,12 @@ class App {
   void OnImGuiRender();
 
  private:
+  float width;
+  float height;
+  float tan_fovx;
+  float tan_fovy;
+  float focal_x;
+  float focal_y;
   float rotateX = 35.;
   float rotateZ = 180.;
   const float C0 = 0.28209479f;
@@ -23,5 +29,6 @@ class App {
   std::unique_ptr<Shader> shaderProgram;
   std::unique_ptr<Camera> camera;
   std::unique_ptr<CameraEventListener> listener;
+  glm::mat4 getViewModelMatrix();
   void printInfo(happly::PLYData& plyIn);
 };

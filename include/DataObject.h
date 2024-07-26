@@ -102,7 +102,7 @@ class GaussianSplat {
 
   GaussianSplat(const std::vector<GaussianSphere> &spheres);
 
-  void sort(const glm::mat4 &viewMatrix, const bool isAscending = true);
+  void sort(const glm::mat4 &vmMatrix);
   void draw(Shader *shader);
 
   void del();

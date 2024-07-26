@@ -1,6 +1,7 @@
 #include <OPPCH.h>
+#include <SDL_video.h>
 
-bool initWindow(SDL_Window **window, SDL_GLContext *context, const char *title, const int width, const int height) {
+bool initWindow(SDL_Window **window, SDL_GLContext *context, const char *title, int &width, int &height) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
     return false;
@@ -14,6 +15,18 @@ bool initWindow(SDL_Window **window, SDL_GLContext *context, const char *title, 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 #endif
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  SDL_DisplayMode current;
+  if (SDL_GetCurrentDisplayMode(0, &current) != 0) {
+    std::cerr << "Could not get display mode! SDL_Error: " << SDL_GetError() << std::endl;
+  } else {
+    width = current.w;
+    height = current.h;
+    // hard code the window size
+    width = 1024;
+    height = 768;
+  }
+
   *window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height,
                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
   if (*window == nullptr) {

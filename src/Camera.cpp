@@ -156,6 +156,7 @@ void GhostCameraListener::onKeyDown(SDL_Keycode key) {
       camera->keyState[MOVE_FASTER] = true;
       break;
   }
+  if (onKeyDownCallback) onKeyDownCallback(key);
 }
 void GhostCameraListener::onKeyUp(SDL_Keycode key) {
   switch (key) {
@@ -181,8 +182,15 @@ void GhostCameraListener::onKeyUp(SDL_Keycode key) {
       camera->keyState[MOVE_FASTER] = false;
       break;
   }
+  if (onKeyUpCallback) onKeyUpCallback(key);
 }
 
-void GhostCameraListener::onMouseLeftPress(SDL_Event &e) { camera->lookAroundStart(e.motion.xrel, e.motion.yrel); }
+void GhostCameraListener::onMouseLeftPress(SDL_Event &e) {
+  camera->lookAroundStart(e.motion.xrel, e.motion.yrel);
+  if (onMouseLeftPressCallback) onMouseLeftPressCallback(e);
+}
 
-void GhostCameraListener::onMouseLeftRelease() { camera->lookAroundEnd(); }
+void GhostCameraListener::onMouseLeftRelease() {
+  camera->lookAroundEnd();
+  if (onMouseLeftReleaseCallback) onMouseLeftReleaseCallback();
+}

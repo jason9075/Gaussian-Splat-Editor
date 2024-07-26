@@ -5,6 +5,10 @@
 // Let the user define the event listener
 class CameraEventListener {
  public:
+  std::function<void(SDL_Keycode)> onKeyDownCallback;
+  std::function<void(SDL_Keycode)> onKeyUpCallback;
+  std::function<void(SDL_Event &)> onMouseLeftPressCallback;
+  std::function<void()> onMouseLeftReleaseCallback;
   virtual void onKeyDown(SDL_Keycode key) = 0;
   virtual void onKeyUp(SDL_Keycode key) = 0;
   virtual void onMouseLeftPress(SDL_Event &event) = 0;

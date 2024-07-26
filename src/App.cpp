@@ -3,6 +3,12 @@
 #include <OPPCH.h>
 
 App::App(const float screenWidth, const float screenHeight) {
+  width = screenWidth;
+  height = screenHeight;
+  tan_fovx = tan(glm::radians(45.0f) / 2.0f);
+  tan_fovy = tan(glm::radians(45.0f) / 2.0f);
+  focal_y = width / (2.0f * tan_fovy);
+  focal_x = height / (2.0f * tan_fovx);
   glViewport(0, 0, screenWidth, screenHeight);
 
   shaderProgram =
@@ -34,7 +40,6 @@ App::App(const float screenWidth, const float screenHeight) {
 
   std::vector<GaussianSphere> spheres;
   for (int i = 0; i < x.size(); i++) {
-    // for (int i = 0; i < 1000; i++) {
     GaussianSphere sphere;
     sphere.position = glm::vec3(x[i], y[i], z[i]);
     sphere.color = glm::vec3(0.5f + C0 * red[i], 0.5f + C0 * grn[i], 0.5f + C0 * blu[i]);  // normalize color
@@ -53,14 +58,14 @@ App::App(const float screenWidth, const float screenHeight) {
   glm::vec3 orientation = glm::vec3(-0.7f, -0.6f, 0.0f);
   camera = std::make_unique<Camera>(screenWidth, screenHeight, position, orientation);
   listener = std::make_unique<GhostCameraListener>(camera.get());
+  listener->onKeyUpCallback = [&](SDL_Keycode key) { splat->sort(getViewModelMatrix()); };
+  listener->onMouseLeftReleaseCallback = [&]() { splat->sort(getViewModelMatrix()); };
   camera->setEventListener(listener.get());
+  splat->sort(getViewModelMatrix());
 
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  // TODO: fix z value is opposite
-  // if camera is looking at the origin, the z value should be negative
-  splat->sort(camera->viewMatrix, false);
 }
 App::~App() {}
 
@@ -78,18 +83,10 @@ void App::OnRender() {
       glm::value_ptr(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotateX), glm::vec3(1.0f, 0.0f, 0.0f)),
                                  glm::radians(rotateZ), glm::vec3(0.0f, 0.0f, 1.0f))));
   glUniform1f(glGetUniformLocation(shaderProgram->ID, "scaleFactor"), scaleFactor);
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "W"), 1024.0f);
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "H"), 768.0f);
-  float tan_fovx = tan(glm::radians(45.0f) / 2.0f);
-  float tan_fovy = tan(glm::radians(45.0f) / 2.0f);
-  float focal_y = 768.0f / (2.0f * tan_fovy);
-  float focal_x = 1024.0f / (2.0f * tan_fovx);
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "focal_x"), focal_x);
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "focal_y"), focal_y);
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "tan_fovx"), tan_fovx);
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "tan_fovy"), tan_fovy);
+  glUniform2f(glGetUniformLocation(shaderProgram->ID, "Resolution"), width, height);
+  glUniform2f(glGetUniformLocation(shaderProgram->ID, "Focal"), focal_x, focal_y);
+  glUniform2f(glGetUniformLocation(shaderProgram->ID, "TanFov"), tan_fovx, tan_fovy);
   camera->update(shaderProgram.get());
-  // splat->sort(camera->viewMatrix, false);
   splat->draw(shaderProgram.get());
 }
 
@@ -100,15 +97,15 @@ void App::OnImGuiRender() {
   ImGui::Text("X:%.2f Y:%.2f Z:%.2f", camera->orientation.x, camera->orientation.y, camera->orientation.z);
   ImGui::Text("View Matrix:");
 
-  glm::mat4 vm = camera->viewMatrix;
-  ImGui::Text("%.2f %.2f %.2f %.2f", vm[0][0], vm[0][1], vm[0][2], vm[0][3]);
-  ImGui::Text("%.2f %.2f %.2f %.2f", vm[1][0], vm[1][1], vm[1][2], vm[1][3]);
-  ImGui::Text("%.2f %.2f %.2f %.2f", vm[2][0], vm[2][1], vm[2][2], vm[2][3]);
-  ImGui::Text("%.2f %.2f %.2f %.2f", vm[3][0], vm[3][1], vm[3][2], vm[3][3]);
-
   ImGui::SliderFloat("Rot-X", &rotateX, -180., 180.);
   ImGui::SliderFloat("Rot-Z", &rotateZ, -180., 180.);
   ImGui::SliderFloat("ScaleF", &scaleFactor, 0.1f, 3.0f);
+}
+
+glm::mat4 App::getViewModelMatrix() {
+  glm::mat4 modelMatrix = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotateX), glm::vec3(1.0f, 0.0f, 0.0f)),
+                                      glm::radians(rotateZ), glm::vec3(0.0f, 0.0f, 1.0f));
+  return camera->viewMatrix * modelMatrix;
 }
 
 void App::printInfo(happly::PLYData& plyIn) {

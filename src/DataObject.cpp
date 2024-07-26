@@ -2,6 +2,8 @@
 
 #include <OPPCH.h>
 
+#include <chrono>
+
 #include "stb_image.h"
 
 VAO::VAO() { glGenVertexArrays(1, &ID); }
@@ -148,22 +150,21 @@ GaussianSplat::GaussianSplat(const std::vector<GaussianSphere> &spheres)
   vao.unbind();
 }
 
-void GaussianSplat::sort(const glm::mat4 &viewMatrix, const bool isAscending) {
+void GaussianSplat::sort(const glm::mat4 &vmMatrix) {
+  auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::pair<size_t, float>> zValues(spheres.size());
 
   for (size_t i = 0; i < spheres.size(); ++i) {
-    float z = spheres[i].position.x * viewMatrix[0][2] + spheres[i].position.y * viewMatrix[1][2] +
-              spheres[i].position.z * viewMatrix[2][2] + viewMatrix[3][2];
+    float z = spheres[i].position.x * vmMatrix[0][2] + spheres[i].position.y * vmMatrix[1][2] +
+              spheres[i].position.z * vmMatrix[2][2] + vmMatrix[3][2];
     zValues[i] = std::make_pair(i, z);
   }
   std::sort(zValues.begin(), zValues.end(),
-            [isAscending](const std::pair<size_t, float> &a, const std::pair<size_t, float> &b) {
-              return isAscending ? a.second < b.second : a.second > b.second;
-            });
+            [](const std::pair<size_t, float> &a, const std::pair<size_t, float> &b) { return a.second < b.second; });
 
   // Update the EBO
   std::vector<GLuint> indices(spheres.size());
-  for (size_t i = 0; i < spheres.size(); ++i) {
+  for (size_t i = 0; i < zValues.size(); ++i) {
     indices[i] = zValues[i].first;
   }
 
@@ -171,6 +172,8 @@ void GaussianSplat::sort(const glm::mat4 &viewMatrix, const bool isAscending) {
   ebo.bind();
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * indices.size(), indices.data());
   vao.unbind();
+  std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - start;
+  std::cout << "Sort time: " << elapsed.count() << "s" << std::endl;
 }
 
 void GaussianSplat::draw(Shader *shader) {

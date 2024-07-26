@@ -1,20 +1,21 @@
 #include <OPPCH.h>
 
-#include "GUI.h"
 #include "App.h"
+#include "GUI.h"
 #include "Window.h"
 
 // Global variables
 const char *WINDOW_TITLE = "OpenGL Demo";
-const int SCREEN_WIDTH = 1024;
-const int SCREEN_HEIGHT = 768;
 
 int main(int argc, char *args[]) {
   // init SDL
   SDL_Window *window = nullptr;
   SDL_GLContext context;
+  // default screen size
+  int *screen_width = new int(1024);
+  int *screen_height = new int(768);
 
-  if (!initWindow(&window, &context, WINDOW_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT)) {
+  if (!initWindow(&window, &context, WINDOW_TITLE, *screen_width, *screen_height)) {
     std::cerr << "Failed to initialize!" << std::endl;
     exit(1);
   }
@@ -28,7 +29,7 @@ int main(int argc, char *args[]) {
   }
   // SDL_GL_SetSwapInterval(0);  // Disable VSync
 
-  App *app = new App(SCREEN_WIDTH, SCREEN_HEIGHT);
+  App *app = new App(*screen_width, *screen_height);
   GUI gui(window, context, app);
 
   // main func
