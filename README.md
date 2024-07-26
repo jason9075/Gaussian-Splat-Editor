@@ -4,7 +4,7 @@ Gaussian Splat Editor is an OpenGL tool designed for rendering Gaussian Splat .p
 
 ## Example Video
 
-[![Example Video](https://img.youtube.com/vi/_gb3ja7yWPo/hqdefault.jpg)](https://youtu.be/_gb3ja7yWPo?si=VWrYYp2CCI9ugnqk)
+[![Example Video](./imgs/gs.gif)](https://youtu.be/_gb3ja7yWPo?si=VWrYYp2CCI9ugnqk)
 
 ## Features
 
