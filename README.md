@@ -2,6 +2,8 @@
 
 Gaussian Splat Editor is an OpenGL tool designed for rendering Gaussian Splat .ply files and allowing users to remove unwanted splats.
 
+## Example Video
+
 [![Example Video](https://img.youtube.com/vi/_gb3ja7yWPo/hqdefault.jpg)](https://youtu.be/_gb3ja7yWPo?si=VWrYYp2CCI9ugnqk)
 
 ## Features
