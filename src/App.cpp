@@ -11,7 +11,7 @@ App::App(const float screenWidth, const float screenHeight) {
   focal_x = height / (2.0f * tan_fovx);
   glViewport(0, 0, screenWidth, screenHeight);
 
-  shaderProgram =
+  splatShader =
       std::make_unique<Shader>("./shaders/geo_vert.glsl", "./shaders/geo_gert.glsl", "./shaders/geo_frag.glsl");
 
   happly::PLYData plyIn("./assets/Medic.ply");
@@ -65,7 +65,19 @@ App::App(const float screenWidth, const float screenHeight) {
 
   glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+  // Box Mesh
+  boxShader = std::make_unique<Shader>("./shaders/box_vert.glsl", "./shaders/box_frag.glsl");
+  std::vector<Vertex> boxVertices = {
+      {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f}}, {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
+      {{1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 0.0f}},   {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+      {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 1.0f}},
+      {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}},    {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f}},
+  };
+  std::vector<GLuint> boxIndices = {
+      0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4, 4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3,
+  };
+  boxMesh = std::make_unique<Mesh>(boxVertices, boxIndices);
 }
 App::~App() {}
 
@@ -77,17 +89,28 @@ void App::OnRender() {
 
   camera->moveCamera();
 
-  shaderProgram->use();
-  glUniformMatrix4fv(
-      glGetUniformLocation(shaderProgram->ID, "modelMatrix"), 1, GL_FALSE,
-      glm::value_ptr(glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotateX), glm::vec3(1.0f, 0.0f, 0.0f)),
-                                 glm::radians(rotateZ), glm::vec3(0.0f, 0.0f, 1.0f))));
-  glUniform1f(glGetUniformLocation(shaderProgram->ID, "scaleFactor"), scaleFactor);
-  glUniform2f(glGetUniformLocation(shaderProgram->ID, "Resolution"), width, height);
-  glUniform2f(glGetUniformLocation(shaderProgram->ID, "Focal"), focal_x, focal_y);
-  glUniform2f(glGetUniformLocation(shaderProgram->ID, "TanFov"), tan_fovx, tan_fovy);
-  camera->update(shaderProgram.get());
-  splat->draw(shaderProgram.get());
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  splatShader->use();
+  glUniformMatrix4fv(glGetUniformLocation(splatShader->ID, "modelMatrix"), 1, GL_FALSE,
+                     glm::value_ptr(glm::mat4(1.0f)));
+  glUniform1f(glGetUniformLocation(splatShader->ID, "scaleFactor"), scaleFactor);
+  glUniform2f(glGetUniformLocation(splatShader->ID, "Resolution"), width, height);
+  glUniform2f(glGetUniformLocation(splatShader->ID, "Focal"), focal_x, focal_y);
+  glUniform2f(glGetUniformLocation(splatShader->ID, "TanFov"), tan_fovx, tan_fovy);
+  // calc box bounds location
+  glm::vec3 boxMin = glm::vec3(boxPosition[0] - boxSize[0], boxPosition[1] - boxSize[1], boxPosition[2] - boxSize[2]);
+  glm::vec3 boxMax = glm::vec3(boxPosition[0] + boxSize[0], boxPosition[1] + boxSize[1], boxPosition[2] + boxSize[2]);
+  glUniform3fv(glGetUniformLocation(splatShader->ID, "BoxMin"), 1, glm::value_ptr(boxMin));
+  glUniform3fv(glGetUniformLocation(splatShader->ID, "BoxMax"), 1, glm::value_ptr(boxMax));
+  camera->update(splatShader.get());
+  splat->draw(splatShader.get());
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  boxShader->use();
+  camera->update(boxShader.get());
+  glUniform3fv(glGetUniformLocation(boxShader->ID, "Size"), 1, boxSize);
+  glUniform3fv(glGetUniformLocation(boxShader->ID, "Position"), 1, boxPosition);
+  boxMesh->draw(boxShader.get());
 }
 
 void App::OnImGuiRender() {
@@ -95,18 +118,31 @@ void App::OnImGuiRender() {
   ImGui::Text("X:%.2f Y:%.2f Z:%.2f", camera->position.x, camera->position.y, camera->position.z);
   ImGui::Text("Camera Orientation:");
   ImGui::Text("X:%.2f Y:%.2f Z:%.2f", camera->orientation.x, camera->orientation.y, camera->orientation.z);
-  ImGui::Text("View Matrix:");
 
-  ImGui::SliderFloat("Rot-X", &rotateX, -180., 180.);
-  ImGui::SliderFloat("Rot-Z", &rotateZ, -180., 180.);
+  if (ImGui::Button("Rot-X +10 degrees")) {
+    splat->rotateX(10);
+  }
+  if (ImGui::Button("Rot-X -10 degrees")) {
+    splat->rotateX(-10);
+  }
+  if (ImGui::Button("Rot-Z +10 degrees")) {
+    splat->rotateZ(10);
+  }
+  if (ImGui::Button("Rot-Z -10 degrees")) {
+    splat->rotateZ(-10);
+  }
+  if (ImGui::Button("Remove Splat")) {
+    splat->removeSplats(boxPosition, boxSize);
+    splat->sort(getViewModelMatrix());
+  }
   ImGui::SliderFloat("ScaleF", &scaleFactor, 0.1f, 3.0f);
+
+  ImGui::Text("Box:");
+  ImGui::SliderFloat3("Scale", boxSize, 0.1f, 10.0f);
+  ImGui::SliderFloat3("Position", boxPosition, -30.0f, 30.0f);
 }
 
-glm::mat4 App::getViewModelMatrix() {
-  glm::mat4 modelMatrix = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(rotateX), glm::vec3(1.0f, 0.0f, 0.0f)),
-                                      glm::radians(rotateZ), glm::vec3(0.0f, 0.0f, 1.0f));
-  return camera->viewMatrix * modelMatrix;
-}
+glm::mat4 App::getViewModelMatrix() { return camera->viewMatrix; }
 
 void App::printInfo(happly::PLYData& plyIn) {
   auto comments = plyIn.comments;

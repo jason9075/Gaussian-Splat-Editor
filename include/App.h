@@ -21,12 +21,14 @@ class App {
   float tan_fovy;
   float focal_x;
   float focal_y;
-  float rotateX = 35.;
-  float rotateZ = 180.;
   const float C0 = 0.28209479f;
   float scaleFactor = 1.0f;
+  std::unique_ptr<Mesh> boxMesh;
+  float boxSize[3] = {1.0f, 1.0f, 1.0f};
+  float boxPosition[3] = {0.0f, 0.0f, 0.0f};
   std::unique_ptr<GaussianSplat> splat;
-  std::unique_ptr<Shader> shaderProgram;
+  std::unique_ptr<Shader> boxShader;
+  std::unique_ptr<Shader> splatShader;
   std::unique_ptr<Camera> camera;
   std::unique_ptr<CameraEventListener> listener;
   glm::mat4 getViewModelMatrix();

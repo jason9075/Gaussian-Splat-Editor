@@ -8,6 +8,7 @@ in vec3 GeoCov[];
 in vec3 GeoColor[];
 in float GeoOpacity[];
 in float GeoScaleModif[];
+flat in int GeoIsSelected[];
 
 uniform mat4 camMatrix;
 uniform vec2 Resolution;
@@ -17,6 +18,7 @@ out vec3 Cov;
 out vec3 Color;
 out float Opacity;
 out float ScaleModif;
+flat out int IsSelected;
 
 void main()
 {
@@ -26,6 +28,7 @@ void main()
     Opacity = GeoOpacity[0];
     Cov = GeoCov[0];
     ScaleModif = GeoScaleModif[0];
+    IsSelected = GeoIsSelected[0];
 
     // Top left, bottom left, top right, bottom right
     vec2 offsets[4] = vec2[4](vec2(-1, -1), vec2(1, -1), vec2(-1, 1), vec2(1, 1));

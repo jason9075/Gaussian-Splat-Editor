@@ -45,60 +45,8 @@ void EBO::bufferData(const std::vector<GLuint> &indices) {
 
 void EBO::del() { glDeleteBuffers(1, &ID); }
 
-Texture::Texture(const char *image, const char *texType, GLuint slot) : type(texType) {
-  int width, height, nrChannels;
-
-  stbi_set_flip_vertically_on_load(true);
-  unsigned char *data = stbi_load(image, &width, &height, &nrChannels, 0);
-
-  glGenTextures(1, &ID);
-  glActiveTexture(GL_TEXTURE0 + slot);
-  unit = slot;
-  glBindTexture(GL_TEXTURE_2D, ID);
-
-  if (data) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  } else {
-    std::cerr << "Failed to load texture: " << image << std::endl;
-  }
-
-  if (nrChannels == 4) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-  } else if (nrChannels == 3) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-  } else if (nrChannels == 1) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
-  } else {
-    throw std::invalid_argument("Automatic conversion of image channels is not supported.");
-  }
-
-  // Generate mipmaps
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  stbi_image_free(data);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void Texture::texUnit(Shader &shader, const char *uniform, GLuint unit) {
-  glUniform1i(glGetUniformLocation(shader.ID, uniform), unit);
-}
-
-void Texture::bind() {
-  glActiveTexture(GL_TEXTURE0 + unit);
-  glBindTexture(GL_TEXTURE_2D, ID);
-}
-
-void Texture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
-
-void Texture::del() { glDeleteTextures(1, &ID); }
-
-Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices,
-           const std::vector<Texture> &textures)
-    : vertices(vertices), indices(indices), textures(textures), vao(), vbo(vertices), ebo() {
+Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices)
+    : vertices(vertices), indices(indices), vao(), vbo(vertices), ebo() {
   vao.bind();
   ebo.bind();
   ebo.bufferData(indices);
@@ -106,7 +54,6 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indic
   vao.linkAttr(vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void *)offsetof(Vertex, position));
   vao.linkAttr(vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void *)offsetof(Vertex, normal));
   vao.linkAttr(vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void *)offsetof(Vertex, color));
-  vao.linkAttr(vbo, 3, 2, GL_FLOAT, sizeof(Vertex), (void *)offsetof(Vertex, texCoords));
 
   vao.unbind();
 }
@@ -114,18 +61,9 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indic
 void Mesh::draw(Shader *shader) {
   vao.bind();
 
-  // Textures
-  for (unsigned int i = 0; i < textures.size(); i++) {
-    textures[i].texUnit(*shader, "texture0", i);
-    textures[i].bind();
-  }
-
   glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
   vao.unbind();
-  for (unsigned int i = 0; i < textures.size(); i++) {
-    textures[i].unbind();
-  }
 }
 
 void Mesh::del() {
@@ -174,6 +112,59 @@ void GaussianSplat::sort(const glm::mat4 &vmMatrix) {
   vao.unbind();
   std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - start;
   std::cout << "Sort time: " << elapsed.count() << "s" << std::endl;
+}
+
+void GaussianSplat::rotateX(float degree) {
+  glm::mat3 R(glm::rotate(glm::mat4(1.0f), glm::radians(degree), glm::vec3(1.0f, 0.0f, 0.0f)));
+  for (size_t i = 0; i < spheres.size(); ++i) {
+    glm::mat3 M =
+        R *
+        glm::mat3(spheres[i].covA.x, spheres[i].covA.y, spheres[i].covA.z, spheres[i].covA.y, spheres[i].covB.x,
+                  spheres[i].covB.y, spheres[i].covA.z, spheres[i].covB.y, spheres[i].covB.z) *
+        glm::transpose(R);
+    spheres[i].position = R * spheres[i].position;
+    spheres[i].covA = glm::vec3(M[0][0], M[0][1], M[0][2]);
+    spheres[i].covB = glm::vec3(M[1][1], M[1][2], M[2][2]);
+  }
+  vbo.bind();
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GaussianSphere) * spheres.size(), spheres.data());
+  vbo.unbind();
+}
+
+void GaussianSplat::rotateZ(float degree) {
+  glm::mat3 R(glm::rotate(glm::mat4(1.0f), glm::radians(degree), glm::vec3(0.0f, 0.0f, 1.0f)));
+  for (size_t i = 0; i < spheres.size(); ++i) {
+    glm::mat3 M =
+        R *
+        glm::mat3(spheres[i].covA.x, spheres[i].covA.y, spheres[i].covA.z, spheres[i].covA.y, spheres[i].covB.x,
+                  spheres[i].covB.y, spheres[i].covA.z, spheres[i].covB.y, spheres[i].covB.z) *
+        glm::transpose(R);
+    spheres[i].position = R * spheres[i].position;
+    spheres[i].covA = glm::vec3(M[0][0], M[0][1], M[0][2]);
+    spheres[i].covB = glm::vec3(M[1][1], M[1][2], M[2][2]);
+  }
+  vbo.bind();
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GaussianSphere) * spheres.size(), spheres.data());
+  vbo.unbind();
+}
+
+void GaussianSplat::removeSplats(float position[3], float size[3]) {
+  float minX = position[0] - size[0];
+  float maxX = position[0] + size[0];
+  float minY = position[1] - size[1];
+  float maxY = position[1] + size[1];
+  float minZ = position[2] - size[2];
+  float maxZ = position[2] + size[2];
+  auto it = std::remove_if(
+      spheres.begin(), spheres.end(), [minX, maxX, minY, maxY, minZ, maxZ](const GaussianSphere &sphere) {
+        return minX <= sphere.position.x && sphere.position.x <= maxX && minY <= sphere.position.y &&
+               sphere.position.y <= maxY && minZ <= sphere.position.z && sphere.position.z <= maxZ;
+      });
+  spheres.erase(it, spheres.end());
+
+  vbo.bind();
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GaussianSphere) * spheres.size(), spheres.data());
+  vbo.unbind();
 }
 
 void GaussianSplat::draw(Shader *shader) {

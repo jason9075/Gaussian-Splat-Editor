@@ -21,7 +21,6 @@ struct Vertex {
   glm::vec3 position;
   glm::vec3 normal;
   glm::vec3 color;
-  glm::vec2 texCoords;
 };
 
 struct Point {
@@ -62,31 +61,16 @@ class EBO {
   GLuint ID;
 };
 
-class Texture {
- public:
-  const char *type;
-  Texture(const char *image, const char *texType, GLuint slot);
-  void texUnit(Shader &shader, const char *uniform, GLuint unit);
-  void bind();
-  void unbind();
-  void del();
-
- private:
-  GLuint ID;
-  GLuint unit;
-};
-
 class Mesh {
  public:
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
-  std::vector<Texture> textures;
 
   VAO vao;
   VBO vbo;
   EBO ebo;
 
-  Mesh(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices, const std::vector<Texture> &textures);
+  Mesh(const std::vector<Vertex> &vertices, const std::vector<GLuint> &indices);
 
   void draw(Shader *shader);
 
@@ -102,6 +86,9 @@ class GaussianSplat {
 
   GaussianSplat(const std::vector<GaussianSphere> &spheres);
 
+  void rotateX(float angle);
+  void rotateZ(float angle);
+  void removeSplats(float boxPosition[3], float boxSize[3]);
   void sort(const glm::mat4 &vmMatrix);
   void draw(Shader *shader);
 

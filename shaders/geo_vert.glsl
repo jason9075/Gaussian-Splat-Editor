@@ -13,6 +13,8 @@ uniform float scaleFactor;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 camMatrix;
+uniform vec3 BoxMin;
+uniform vec3 BoxMax;
 
 out vec2 GeoCenterPix;
 out float GeoRadius;
@@ -20,6 +22,7 @@ out vec3 GeoCov;
 out vec3 GeoColor;
 out float GeoOpacity;
 out float GeoScaleModif;
+flat out int GeoIsSelected;
 
 float ndc2Pix(float v, float S) {
     return ((v + 1.) * S - 1.) * .5;
@@ -101,4 +104,15 @@ void main()
     GeoColor = aColor;
     GeoOpacity = aOpacity;
     GeoScaleModif = 1. / scaleFactor;
+
+    if (aPos.x >= BoxMin.x && aPos.x <= BoxMax.x &&
+        aPos.y >= BoxMin.y && aPos.y <= BoxMax.y &&
+        aPos.z >= BoxMin.z && aPos.z <= BoxMax.z)
+    {
+        GeoIsSelected = 1;
+    }
+    else
+    {
+        GeoIsSelected = 0;
+    }
 }
