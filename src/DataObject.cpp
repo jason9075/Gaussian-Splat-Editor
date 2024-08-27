@@ -173,6 +173,14 @@ void GaussianSplat::draw(Shader *shader) {
   vao.unbind();
 }
 
+std::vector<int> GaussianSplat::getExistingIndices() {
+  std::vector<int> existingIndices;
+  for (size_t i = 0; i < spheres.size(); ++i) {
+    existingIndices.push_back(spheres[i].index);
+  }
+  return existingIndices;
+}
+
 void GaussianSplat::del() {
   vao.del();
   vbo.del();

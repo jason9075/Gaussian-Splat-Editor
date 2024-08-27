@@ -15,7 +15,7 @@ find_package(glm REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # Include directories for external libraries
-include_directories(include ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} external/imgui)
+include_directories(include ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} external/imgui external/ImGuiFileDialog)
 
 # SDL2 and OpenGL libraries
 set(IMGUI_SOURCES
@@ -25,6 +25,7 @@ set(IMGUI_SOURCES
     external/imgui/imgui_tables.cpp
     external/imgui/backends/imgui_impl_sdl2.cpp
     external/imgui/backends/imgui_impl_opengl3.cpp
+    external/ImGuiFileDialog/ImGuiFileDialog.cpp
 )
 
 file(GLOB SOURCES src/*.cpp)

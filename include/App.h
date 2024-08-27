@@ -15,6 +15,7 @@ class App {
   void OnImGuiRender();
 
  private:
+  std::string modelPath;
   float width;
   float height;
   float tan_fovx;
@@ -32,5 +33,8 @@ class App {
   std::unique_ptr<Camera> camera;
   std::unique_ptr<CameraEventListener> listener;
   glm::mat4 getViewModelMatrix();
+  std::unique_ptr<GaussianSplat> loadPlyFile(const std::string path);
+  void savePlyFile(const std::string path);
   void printInfo(happly::PLYData& plyIn);
+  void showPathSelector();
 };

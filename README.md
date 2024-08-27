@@ -1,4 +1,4 @@
-# Gaussian Splat Editor (WIP)
+# Gaussian Splat Editor
 
 Gaussian Splat Editor is an OpenGL tool designed for rendering Gaussian Splat .ply files and allowing users to remove unwanted splats.
 
@@ -23,6 +23,7 @@ Gaussian Splat Editor is an OpenGL tool designed for rendering Gaussian Splat .p
 - **glm** for mathematics
 - **nlohmann_json** for JSON parsing
 - **imgui** for GUI rendering
+- **ImGuiFileDialog** for file selection
 
 ### Installation
 

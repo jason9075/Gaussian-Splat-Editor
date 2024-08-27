@@ -36,6 +36,7 @@ struct GaussianSphere {
   float opacity;
   glm::vec3 covA;
   glm::vec3 covB;
+  int index;
 };
 
 class VBO {
@@ -91,6 +92,7 @@ class GaussianSplat {
   void removeSplats(float boxPosition[3], float boxSize[3]);
   void sort(const glm::mat4 &vmMatrix);
   void draw(Shader *shader);
+  std::vector<int> getExistingIndices();
 
   void del();
 };
