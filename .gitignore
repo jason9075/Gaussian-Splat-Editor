@@ -51,8 +51,7 @@ build
 *.app
 
 # external dependencies
-external/imgui/**
-!external/imgui/.keep
+external/imgui
 external/ImGuiFileDialog
 
 assets/**

@@ -14,6 +14,22 @@
         overlays = [ nixgl.overlay ];
       };
     in {
-      devShells.x86_64-linux.default = import ./shell.nix { inherit pkgs; };
+      devShells.x86_64-linux.default = pkgs.mkShell {
+        nativeBuildInputs = with pkgs; [
+          cmake
+          gcc
+          cmake
+          SDL2
+          glew
+          glm
+          nlohmann_json
+          entr
+        ];
+
+        shellHook = ''
+          export LD_LIBRARY_PATH="/run/opengl-driver/lib:/run/opengl-driver-32/lib:$LD_LIBRARY_PATH"
+          echo "Nix env activated."
+        '';
+      };
     };
 }

@@ -4,6 +4,10 @@
 
 [Link](https://github.com/ocornut/imgui)
 
+```bash
+git clone https://github.com/ocornut/imgui.git
+```
+
 ## ImGuiFileDialog
 
 [Link](https://github.com/aiekick/ImGuiFileDialog)
