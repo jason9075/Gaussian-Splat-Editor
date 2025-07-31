@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ShaderClass.h"
+#include "ShaderClass.hpp"
 
 class VBO;
 

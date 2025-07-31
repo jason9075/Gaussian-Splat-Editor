@@ -1,4 +1,4 @@
-#include "ShaderClass.h"
+#include "ShaderClass.hpp"
 
 #include <OPPCH.h>
 

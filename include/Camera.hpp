@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ShaderClass.h"
+#include "ShaderClass.hpp"
 
 // Let the user define the event listener
 class CameraEventListener {

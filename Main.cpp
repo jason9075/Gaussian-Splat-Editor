@@ -1,8 +1,8 @@
 #include <OPPCH.h>
 
-#include "App.h"
-#include "GUI.h"
-#include "Window.h"
+#include "App.hpp"
+#include "GUI.hpp"
+#include "Window.hpp"
 
 // Global variables
 const char *WINDOW_TITLE = "OpenGL Demo";

@@ -1,4 +1,4 @@
-#include "GUI.h"
+#include "GUI.hpp"
 
 #include <OPPCH.h>
 

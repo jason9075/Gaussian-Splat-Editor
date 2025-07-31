@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Camera.h"
-#include "DataObject.h"
-#include "ShaderClass.h"
+#include "Camera.hpp"
+#include "DataObject.hpp"
+#include "ShaderClass.hpp"
 #include "happly.h"
 
 class App {

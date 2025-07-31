@@ -1,4 +1,4 @@
-#include "DataObject.h"
+#include "DataObject.hpp"
 
 #include <OPPCH.h>
 
@@ -111,7 +111,7 @@ void GaussianSplat::sort(const glm::mat4 &vmMatrix) {
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * indices.size(), indices.data());
   vao.unbind();
   std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - start;
-  std::cout << "Sort time: " << elapsed.count() << "s" << std::endl;
+  // std::cout << "Sort time: " << elapsed.count() << "s" << std::endl;
 }
 
 void GaussianSplat::rotateX(float degree) {
