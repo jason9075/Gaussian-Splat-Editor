@@ -17,7 +17,8 @@ void main()
     vec2 diff = CenterPix - gl_FragCoord.xy;
     float power = -0.5 * (Cov.x * diff.x * diff.x + Cov.z * diff.y * diff.y) - Cov.y * diff.x * diff.y;
 
-    power *= ScaleModif; // if ScaleModif is greater, the final alpha will be smaller
+    power *= ScaleModif; 
+
 
     if (power > 0.0){
         discard;
@@ -31,7 +32,7 @@ void main()
     }
 
     if (IsSelected == 1){
-        FragColor = vec4(selectedColor*alpha, alpha);
+        FragColor = vec4(mix(Color, selectedColor, 0.3)*alpha, alpha);
     } else {
         FragColor = vec4(Color*alpha, alpha);
     }

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <GL/glew.h>
+
+#include <glm/glm.hpp>
+#include <vector>
+
 #include "ShaderClass.hpp"
 
 class VBO;
@@ -89,7 +94,7 @@ class GaussianSplat {
 
   void rotateX(float angle);
   void rotateZ(float angle);
-  void removeSplats(float boxPosition[3], float boxSize[3]);
+  void removeSplats(float boxPosition[3], float boxSize[3], const glm::mat4 &modelMatrix);
   void sort(const glm::mat4 &vmMatrix);
   void draw(Shader *shader);
   std::vector<int> getExistingIndices();

@@ -100,7 +100,6 @@ void Camera::moveCamera() {
 
 void Camera::handle(SDL_Event &event) {
   // Handle Keyboard input
-
   if (event.type == SDL_KEYDOWN && listener != nullptr) {
     // only trigger the event once
     if (event.key.repeat == 0) {
@@ -110,10 +109,16 @@ void Camera::handle(SDL_Event &event) {
     listener->onKeyUp(event.key.keysym.sym);
   }
 
+  // TODO: distinish between drag and click to object.
   // Handle Mouse input , move the camera orientation when left mouse button is pressed
-  if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT && event.type == SDL_MOUSEMOTION)) {
+  if (event.type == SDL_MOUSEMOTION && (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) {
+    // Mouse is moving while left button is held
     listener->onMouseLeftPress(event);
-  } else if (event.button.button == SDL_BUTTON_LEFT && event.type == SDL_MOUSEBUTTONUP) {
+  } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+    // Only triggered once, when mouse is clicked down
+    std::cout << "mouse clicked " << std::endl;
+  } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT) {
+    // Only triggered once, when mouse button is released
     listener->onMouseLeftRelease();
   }
 }

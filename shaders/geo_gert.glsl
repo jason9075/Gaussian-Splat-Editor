@@ -9,6 +9,7 @@ in vec3 GeoColor[];
 in float GeoOpacity[];
 in float GeoScaleModif[];
 flat in int GeoIsSelected[];
+flat in int GeoDiscard[];
 
 uniform mat4 camMatrix;
 uniform vec2 Resolution;
@@ -22,6 +23,10 @@ flat out int IsSelected;
 
 void main()
 {
+    if (GeoDiscard[0] == 1) {
+        return;
+    }
+
     // Pass through to fragment shader
     CenterPix = GeoCenterPix[0];
     Color = GeoColor[0];

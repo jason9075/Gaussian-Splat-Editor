@@ -148,18 +148,18 @@ void GaussianSplat::rotateZ(float degree) {
   vbo.unbind();
 }
 
-void GaussianSplat::removeSplats(float position[3], float size[3]) {
+void GaussianSplat::removeSplats(float position[3], float size[3], const glm::mat4 &modelMatrix) {
   float minX = position[0] - size[0];
   float maxX = position[0] + size[0];
   float minY = position[1] - size[1];
   float maxY = position[1] + size[1];
   float minZ = position[2] - size[2];
   float maxZ = position[2] + size[2];
-  auto it = std::remove_if(
-      spheres.begin(), spheres.end(), [minX, maxX, minY, maxY, minZ, maxZ](const GaussianSphere &sphere) {
-        return minX <= sphere.position.x && sphere.position.x <= maxX && minY <= sphere.position.y &&
-               sphere.position.y <= maxY && minZ <= sphere.position.z && sphere.position.z <= maxZ;
-      });
+  auto it = std::remove_if(spheres.begin(), spheres.end(), [&](const GaussianSphere &sphere) {
+    glm::vec3 worldPos = glm::vec3(modelMatrix * glm::vec4(sphere.position, 1.0f));
+    return minX <= worldPos.x && worldPos.x <= maxX && minY <= worldPos.y && worldPos.y <= maxY && minZ <= worldPos.z &&
+           worldPos.z <= maxZ;
+  });
   spheres.erase(it, spheres.end());
 
   vbo.bind();

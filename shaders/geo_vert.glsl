@@ -15,6 +15,7 @@ uniform mat4 viewMatrix;
 uniform mat4 camMatrix;
 uniform vec3 BoxMin;
 uniform vec3 BoxMax;
+uniform int showSelectionBox;
 
 out vec2 GeoCenterPix;
 out float GeoRadius;
@@ -23,6 +24,7 @@ out vec3 GeoColor;
 out float GeoOpacity;
 out float GeoScaleModif;
 flat out int GeoIsSelected;
+flat out int GeoDiscard;
 
 float ndc2Pix(float v, float S) {
     return ((v + 1.) * S - 1.) * .5;
@@ -41,10 +43,11 @@ vec3 computeCov2D(vec3 mean, float[6] cov3DV, mat4 vm)
     t.y = min(limy, max(-limy, tytz)) * t.z;
 
     mat3 J = mat3(
-        Focal.x/t.z, 0, -Focal.x * t.x / (t.z * t.z),
-        0, Focal.y/t.z, -Focal.y * t.y / (t.z * t.z),
+        Focal.x / t.z, 0, -Focal.x * t.x / (t.z * t.z),
+        0, Focal.y / t.z, -Focal.y * t.y / (t.z * t.z),
         0, 0, 0
     );
+
     mat3 W = mat3(
         vm[0][0], vm[1][0], vm[2][0],
         vm[0][1], vm[1][1], vm[2][1],
@@ -58,11 +61,12 @@ vec3 computeCov2D(vec3 mean, float[6] cov3DV, mat4 vm)
         cov3DV[2], cov3DV[4], cov3DV[5]
     );
 
-    mat3 cov = transpose(T) * transpose(Vrk) * T;
+    mat3 cov = transpose(T) * Vrk * T;
     cov[0][0] += .3;
     cov[1][1] += .3;
     return vec3(cov[0][0], cov[0][1], cov[1][1]);
 }
+
 
 
 void main()
@@ -75,6 +79,7 @@ void main()
     if (p4.z < 0.1)
     {
         gl_Position = vec4(0, 0, 0, 1);
+        GeoDiscard = 1;
         return;
     }
 
@@ -87,8 +92,10 @@ void main()
     if (det == 0.)
     {
         gl_Position = vec4(0, 0, 0, 1);
+        GeoDiscard = 1;
         return;
     }
+    GeoDiscard = 0;
     float det_inv = 1.0 / det;
 
     float mid = 0.5 * (cov2D.x + cov2D.z);
@@ -105,9 +112,11 @@ void main()
     GeoOpacity = aOpacity;
     GeoScaleModif = 1. / scaleFactor;
 
-    if (aPos.x >= BoxMin.x && aPos.x <= BoxMax.x &&
-        aPos.y >= BoxMin.y && aPos.y <= BoxMax.y &&
-        aPos.z >= BoxMin.z && aPos.z <= BoxMax.z)
+    vec4 worldPos = modelMatrix * vec4(aPos, 1.0);
+    if (showSelectionBox == 1 &&
+        worldPos.x >= BoxMin.x && worldPos.x <= BoxMax.x &&
+        worldPos.y >= BoxMin.y && worldPos.y <= BoxMax.y &&
+        worldPos.z >= BoxMin.z && worldPos.z <= BoxMax.z)
     {
         GeoIsSelected = 1;
     }

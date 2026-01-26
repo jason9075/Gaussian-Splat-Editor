@@ -7,7 +7,6 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
@@ -51,8 +50,8 @@ build
 *.app
 
 # external dependencies
-external/imgui
-external/ImGuiFileDialog
+# external/imgui
+# external/ImGuiFileDialog
 
 assets/**
 

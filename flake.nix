@@ -18,12 +18,12 @@
         nativeBuildInputs = with pkgs; [
           cmake
           gcc
-          cmake
           SDL2
           glew
           glm
           nlohmann_json
           entr
+          clang-tools
         ];
 
         shellHook = ''
