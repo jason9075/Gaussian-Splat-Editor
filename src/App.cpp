@@ -32,30 +32,44 @@ App::App(const float screenWidth, const float screenHeight) {
 
   // Box Mesh (24 vertices for flat shading)
   boxShader = std::make_unique<Shader>("./shaders/box_vert.glsl", "./shaders/box_frag.glsl");
-  std::vector<Vertex> boxVertices = {
-      // Front face
-      {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-      {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-      // Back face
-      {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}}, {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-      {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}}, {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-      // Top face
-      {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
-      {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
-      // Bottom face
-      {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}}, {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}},
-      {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}}, {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
-      // Right face
-      {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
-      {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}}, {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
-      // Left face
-      {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}}, {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},
-      {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}}, {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}}
-  };
+  std::vector<Vertex> boxVertices = {// Front face
+                                     {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+                                     {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+                                     {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+                                     {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+                                     // Back face
+                                     {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+                                     {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+                                     {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+                                     {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+                                     // Top face
+                                     {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+                                     {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
+                                     {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
+                                     {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+                                     // Bottom face
+                                     {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}},
+                                     {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}},
+                                     {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
+                                     {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
+                                     // Right face
+                                     {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
+                                     {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}},
+                                     {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
+                                     {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
+                                     // Left face
+                                     {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}},
+                                     {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},
+                                     {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},
+                                     {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}}};
   std::vector<GLuint> boxIndices;
   for (int i = 0; i < 6; ++i) {
-    boxIndices.push_back(i * 4 + 0); boxIndices.push_back(i * 4 + 1); boxIndices.push_back(i * 4 + 2);
-    boxIndices.push_back(i * 4 + 2); boxIndices.push_back(i * 4 + 3); boxIndices.push_back(i * 4 + 0);
+    boxIndices.push_back(i * 4 + 0);
+    boxIndices.push_back(i * 4 + 1);
+    boxIndices.push_back(i * 4 + 2);
+    boxIndices.push_back(i * 4 + 2);
+    boxIndices.push_back(i * 4 + 3);
+    boxIndices.push_back(i * 4 + 0);
   }
   boxMesh = std::make_unique<Mesh>(boxVertices, boxIndices);
 
@@ -98,7 +112,7 @@ App::App(const float screenWidth, const float screenHeight) {
   std::vector<Vertex> coneVertices;
   std::vector<GLuint> coneIndices;
   const int coneSectors = 20;
-  coneVertices.push_back({{0, 0, 1.0f}, {0, 0, 1.0f}, {1.0f, 1.0f, 1.0f}}); // Tip
+  coneVertices.push_back({{0, 0, 1.0f}, {0, 0, 1.0f}, {1.0f, 1.0f, 1.0f}});  // Tip
   for (int i = 0; i <= coneSectors; ++i) {
     float angle = i * 2 * PI / coneSectors;
     float x = cosf(angle);
@@ -354,7 +368,8 @@ void App::OnRender() {
   if (showSelectionBox) {
     boxShader->use();
     // Selection Box should be axis-aligned in world space, independent of model rotation
-    glUniformMatrix4fv(glGetUniformLocation(boxShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+    glUniformMatrix4fv(glGetUniformLocation(boxShader->ID, "modelMatrix"), 1, GL_FALSE,
+                       glm::value_ptr(glm::mat4(1.0f)));
     camera->update(boxShader.get());
     glUniform3f(glGetUniformLocation(boxShader->ID, "Color"), 0.8f, 0.8f, 0.8f);
     glUniform3fv(glGetUniformLocation(boxShader->ID, "Size"), 1, boxSize);
@@ -410,7 +425,8 @@ void App::OnRender() {
   if (showSelectionBox) {
     boxShader->use();
     camera->update(boxShader.get());
-    glUniformMatrix4fv(glGetUniformLocation(boxShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+    glUniformMatrix4fv(glGetUniformLocation(boxShader->ID, "modelMatrix"), 1, GL_FALSE,
+                       glm::value_ptr(glm::mat4(1.0f)));
     glm::vec3 boxPos = glm::vec3(boxPosition[0], boxPosition[1], boxPosition[2]);
 
     // Translation Arrows (Using Cones)
@@ -438,7 +454,8 @@ void App::OnRender() {
     // Scaling Handles (Small cyan spheres on faces) - Size decreased from 0.2 to 0.1
     glUniform3f(glGetUniformLocation(boxShader->ID, "Color"), 0.0f, 1.0f, 1.0f);  // Cyan
     glUniform3f(glGetUniformLocation(boxShader->ID, "Size"), 0.1f, 0.1f, 0.1f);
-    glUniformMatrix4fv(glGetUniformLocation(boxShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+    glUniformMatrix4fv(glGetUniformLocation(boxShader->ID, "modelMatrix"), 1, GL_FALSE,
+                       glm::value_ptr(glm::mat4(1.0f)));
     glUniform3fv(glGetUniformLocation(boxShader->ID, "Position"), 1,
                  glm::value_ptr(boxPos + glm::vec3(boxSize[0], 0, 0)));
     sphereMesh->draw(boxShader.get());
@@ -461,7 +478,6 @@ void App::OnRender() {
 
   glEnable(GL_DEPTH_TEST);
 }
-
 
 void App::OnImGuiRender() {
   ImGui::Text("Camera Position:");
